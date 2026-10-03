@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAULO ROCK PARÁ - 100% ROCK</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.3/dist/peerjs.min.js"></script>
+<style>
+:root{--bg:#050507;--card:#0F1422;--blue:#00D4FF;--green:#00FF88;--yellow:#FFEB3B;--red:#FF0033;--border:rgba(0,212,255,.25);--text:#E2E8F0;--muted:#6B7280}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-family:'Bebas Neue',sans-serif}
+canvas#stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+#btn-invisivel{position:fixed;top:0;left:0;width:45px;height:45px;z-index:100;opacity:0;cursor:pointer}
+header{position:relative;z-index:2;text-align:center;padding:30px 20px 10px;border-bottom:1px solid var(--border)}
+header h1{font-size:62px;letter-spacing:4px;text-shadow:0 0 20px var(--blue)} header h1 span{color:var(--blue)} header h1 i{color:var(--green);font-style:normal} header h1 b{color:var(--yellow)}
+header p{font-family:'JetBrains Mono';font-size:11px;color:var(--muted);letter-spacing:2px}
+.player-wrap{position:relative;z-index:2;max-width:900px;margin:30px auto;display:grid;grid-template-columns:320px 1fr;gap:20px;padding:20px}
+@media(max-width:800px){.player-wrap{grid-template-columns:1fr}}
+.capa{width:100%;aspect-ratio:1/1;background:#0a0a0a;border:2px solid var(--border);border-radius:24px;overflow:hidden;box-shadow:0 0 50px rgba(0,212,255,.3)}
+.capa img{width:100%;height:100%;object-fit:cover}
+.info h2{font-size:38px;color:var(--yellow);min-height:76px}
+.info small{font-family:'JetBrains Mono';color:var(--blue);font-size:12px}
+.controls{display:flex;gap:10px;margin:16px 0}
+.btn{border:0;border-radius:14px;padding:14px 22px;font-weight:900;cursor:pointer;font-family:'JetBrains Mono';font-size:13px;transition:.2s}
+.btn-play{background:var(--blue);color:#000;flex:1;box-shadow:0 0 20px var(--blue)}
+.btn-stop{background:transparent;border:1px solid var(--border);color:var(--text);flex:1}
+#noar{position:fixed;top:14px;right:14px;z-index:5;width:88px;height:88px;border-radius:50%;border:3px solid #222;background:#000;color:#555;display:grid;place-items:center;font-weight:700;cursor:pointer}
+#noar.on{color:#fff;border-color:var(--red);box-shadow:0 0 30px var(--red);animation:piscar.6s infinite}
+@keyframes piscar{0%{background:#FF0033}50%{background:#00FF88}100%{background:#FF0033}}
+.pedidos{position:relative;z-index:2;max-width:900px;margin:10px auto 120px;padding:0 20px}
+.card{background:rgba(15,20,34,.6);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:20px;padding:20px}
+.card h3{color:var(--green);letter-spacing:2px;margin-bottom:12px}
+.card input,.card textarea{width:100%;padding:12px;background:#050507;border:1px solid var(--border);border-radius:12px;color:#fff;margin-bottom:10px;font-family:'JetBrains Mono'}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+.modal.open{display:flex}
+.box-login{background:linear-gradient(180deg,#111729,#0F1422);border:1px solid var(--blue);border-radius:22px;padding:32px;width:100%;max-width:360px;text-align:center;box-shadow:0 0 50px rgba(0,212,255,.3)}
+.box-login h2{color:var(--blue);letter-spacing:4px;margin-bottom:10px;font-size:26px;text-shadow:0 0 15px var(--blue)}
+.box-login input{width:100%;padding:14px;background:#050507;border:1px solid var(--border);border-radius:12px;color:#fff;margin-bottom:12px;font-family:'JetBrains Mono';text-align:center}
+.box-adm{width:100%;max-width:1100px;max-height:92vh;overflow:auto;background:#080A14;border:1px solid var(--border);border-radius:24px;padding:22px}
+.adm-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px} @media(max-width:900px){.adm-grid{grid-template-columns:1fr}}
+.adm-section{background:#050507;border:1px solid var(--border);border-radius:16px;padding:14px}
+.adm-section h4{color:var(--yellow);font-family:'JetBrains Mono';font-size:11px;margin-bottom:10px}
+.adm-section input{width:100%;padding:10px;background:#0F1422;border:1px solid var(--border);border-radius:10px;color:#fff;margin-bottom:8px;font-family:'JetBrains Mono';font-size:12px}
+.lista-adm{max-height:160px;overflow:auto;display:grid;gap:6px;margin-top:10px}
+.item-adm{background:rgba(255,255,255,.04);border:1px solid var(--border);padding:8px;border-radius:10px;font-family:'JetBrains Mono';font-size:11px}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="btn-invisivel"></div>
+<button id="noar">NO AR</button>
+<header><h1><span>PAULO</span> <i>ROCK</i> <b>PARÁ</b></h1><p id="statusSync">● A RÁDIO ROCK!</p></header>
+
+<div class="player-wrap">
+  <div class="capa"><img id="imgTocando" src="https://prodigits.co.uk/pthumbs/screensavers/down/original/frequency_omt71hel.gif"></div>
+  <div class="info">
+    <small id="tipoTocando"></small>
+    <h2 id="nomeTocando">PAULO ROCK PARÁ</h2>
+    <div class="controls"><button class="btn btn-play" id="btnPlay">▶ PLAY RÁDIO</button><button class="btn btn-stop" id="btnStop">■ STOP</button></div>
+    <p style="font-family:'JetBrains Mono';font-size:9px;color:var(--green)" id="infoSync"></p>
+  </div>
+</div>
+
+<div class="pedidos">
+<div class="card">
+<h3>📻 PEDIDO DE MÚSICA / ANÚNCIO</h3>
+<input id="pedNome" placeholder="Seu nome">
+<input id="pedMusica" placeholder="Música ou anúncio que quer ouvir">
+<textarea id="pedMsg" placeholder="Mensagem para o locutor"></textarea>
+<button class="btn btn-play" style="width:100%" onclick="enviarPedido()">ENVIAR PEDIDO</button>
+<p id="pedStatus" style="font-family:'JetBrains Mono';font-size:11px;margin-top:12px;display:none;padding:10px;border-radius:10px"></p>
+</div>
+</div>
+
+<div id="modalLogin" class="modal"><div class="box-login"><h2>🔒 ADM</h2><p style="font-family:'JetBrains Mono';font-size:10px;color:var(--muted);margin-bottom:16px">ACESSO MASTER</p><input id="loginUser" placeholder="usuário"><input id="loginPass" type="password" placeholder="senha"><div id="loginErro" style="color:var(--red);font-family:'JetBrains Mono';font-size:11px;margin-bottom:10px;display:none">🔴 LOGIN INVÁLIDO</div><div style="display:flex;gap:8px"><button class="btn btn-play" style="flex:1" onclick="fazerLogin()">ENTRAR</button><button class="btn btn-stop" style="flex:1" onclick="fecharLogin()">FECHAR</button></div></div></div>
+
+<div id="modalAdm" class="modal"><div class="box-adm">
+<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px"><h2 style="color:var(--blue)">PAINEL ADM</h2><div style="display:flex;gap:8px"><button class="btn btn-play" id="btnNoArAdm" onclick="toggleNoAr()">🔴 AO VIVO P/ TODOS</button><button class="btn btn-stop" onclick="fecharAdm()">✕ FECHAR</button></div></div>
+<div class="adm-grid">
+  <div class="adm-section"><h4>🎵 MÚSICAS - PASTA DRIVE</h4><input id="admPastaMus" placeholder="https://drive.google.com/drive/folders/ID"><button class="btn btn-play" style="width:100%" onclick="carregarPasta('musicas')">📂 CARREGAR PASTA</button><small id="statusMus" style="color:var(--green);font-family:'JetBrains Mono'"></small><div class="lista-adm" id="listaMusAdm"></div></div>
+  <div class="adm-section"><h4>📢 ANÚNCIOS - PASTA DRIVE</h4><input id="admPastaAnu" placeholder="https://drive.google.com/drive/folders/ID"><button class="btn btn-play" style="width:100%;background:var(--yellow);color:#000" onclick="carregarPasta('anuncios')">📂 CARREGAR ANÚNCIOS</button><small id="statusAnu" style="color:var(--yellow);font-family:'JetBrains Mono'"></small><div class="lista-adm" id="listaAnuAdm"></div></div>
+</div>
+<div style="margin-top:14px;display:flex;gap:8px"><button class="btn btn-play" style="flex:1" onclick="iniciarTransmissao()">▶ INICIAR TRANSMISSÃO</button><button class="btn btn-stop" style="flex:1" onclick="pararTransmissao()">■ PARAR RÁDIO</button></div>
+<p style="font-family:'JetBrains Mono';font-size:10px;color:var(--muted);margin-top:10px" id="admStatus">CLIQUE EM INICIAR</p>
+</div></div>
+
+<audio id="audio" crossorigin="anonymous"></audio>
+<audio id="audioMic" autoplay></audio>
+
+<script>
+const URL_PLANILHA = "https://script.google.com/macros/s/AKfycbz9mqkE23XAHt4JIl8BBGIYRWn0_sypZuejunsyLx-N-e_rlk1ZFk86c7PaVU6EZYzG/exec";
+const audio = document.getElementById('audio');
+let musicas = JSON.parse(localStorage.getItem('prp_mus')||'[]');
+let anuncios = JSON.parse(localStorage.getItem('prp_anu')||'[]');
+let ordemAnuncio = parseInt(localStorage.getItem('prp_ordemAnu')||'0');
+let tocadas = parseInt(localStorage.getItem('prp_tocadas')||'0');
+let filaMusicas = []; let isAdm = false; let peer, localStream; let intervaloSync=null;
+
+const cvs=document.getElementById('stars'), ctx=cvs.getContext('2d');
+function resize(){cvs.width=innerWidth; cvs.height=innerHeight} resize(); addEventListener('resize',resize);
+let stars=[...Array(150)].map(()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,s:Math.random()*2+0.5,v:Math.random()*1+0.3}));
+(function draw(){ctx.clearRect(0,0,cvs.width,cvs.height); ctx.fillStyle='#C0C0C0'; stars.forEach(st=>{ctx.globalAlpha=Math.random()*0.5+0.5; ctx.beginPath(); ctx.arc(st.x,st.y,st.s,0,Math.PI*2); ctx.fill(); st.y+=st.v; if(st.y>cvs.height){st.y=0; st.x=Math.random()*innerWidth}}); requestAnimationFrame(draw)})();
+
+function extrairIdPasta(link){ if(!link) return null; if(link.includes('/folders/')) return link.split('/folders/')[1].split('?')[0].split('/')[0]; if(link.includes('id=')) return link.split('id=')[1].split('&')[0]; return link.trim(); }
+
+async function carregarPasta(tipo){
+  const input = tipo==='musicas'? document.getElementById('admPastaMus') : document.getElementById('admPastaAnu');
+  const statusEl = tipo==='musicas'? document.getElementById('statusMus') : document.getElementById('statusAnu');
+  const folderId = extrairIdPasta(input.value); if(!folderId) return alert('Cole o link');
+  statusEl.innerText='⏳ LENDO PASTA...';
+  try{
+    const resp = await fetch(URL_PLANILHA+'?folderId='+folderId).then(r=>r.json());
+    if(!resp.arquivos ||!resp.arquivos.length){ statusEl.innerText='❌ Nenhum MP3 público'; return; }
+    if(tipo==='musicas'){ musicas=resp.arquivos.map(f=>({link:f.link,nome:f.nome})); localStorage.setItem('prp_mus',JSON.stringify(musicas)); localStorage.setItem('prp_pasta_mus',input.value); }
+    else{ anuncios=resp.arquivos.map(f=>({link:f.link,nome:f.nome})); localStorage.setItem('prp_anu',JSON.stringify(anuncios)); localStorage.setItem('prp_pasta_anu',input.value); }
+    statusEl.innerText=`✔ ${resp.total} CARREGADOS!`; renderAdm(); embaralhar();
+  }catch(e){ statusEl.innerText='❌ Erro ao ler'; }
+}
+
+function embaralhar(){ filaMusicas=[...musicas].sort(()=>Math.random()-0.5); }
+
+async function broadcastEstado(estado){
+  try{ await fetch(URL_PLANILHA,{method:'POST',mode:'no-cors',body:JSON.stringify({acao:'setEstado', estado})}); }catch(e){}
+}
+
+function tocarProximaMASTER(){
+  if(!isAdm) return;
+  if(!filaMusicas.length) embaralhar();
+  let ehAnuncio = (tocadas>0 && tocadas%5===0 && anuncios.length>0);
+  let item;
+  if(ehAnuncio){ item=anuncios[ordemAnuncio % anuncios.length]; ordemAnuncio++; tocadas=0; }
+  else{ item=filaMusicas.pop(); tocadas++; }
+  localStorage.setItem('prp_tocadas',tocadas); localStorage.setItem('prp_ordemAnu',ordemAnuncio);
+  const estado = { link:item.link, nome:item.nome, tipo: ehAnuncio?'📢 ANÚNCIO':'🎸 TOCANDO...', inicio: Date.now(), tocadas, ordemAnuncio };
+  document.getElementById('nomeTocando').innerText=item.nome.toUpperCase();
+  document.getElementById('tipoTocando').innerText=estado.tipo+' - TRANSMITINDO';
+  audio.src=item.link; audio.play().catch(()=>{});
+  broadcastEstado(estado);
+  document.getElementById('admStatus').innerText='🔴 TRANSMITINDO: '+item.nome;
+}
+
+function iniciarTransmissao(){
+  if(!musicas.length) return alert('Carregue a pasta de músicas primeiro');
+  isAdm=true; embaralhar(); tocarProximaMASTER();
+  audio.onended=()=>tocarProximaMASTER();
+  peer = new Peer('paulo-rock-para-master', {config:{iceServers:[{urls:'stun:stun.l.google.com:19302'}]}});
+  peer.on('open',()=>{ document.getElementById('admStatus').innerText='🟢 MASTER ONLINE - TODOS SINCRONIZADOS'; });
+  if(intervaloSync) clearInterval(intervaloSync);
+  intervaloSync = setInterval(()=>{ if(audio.src){ broadcastEstado({link:audio.src, nome:document.getElementById('nomeTocando').innerText, tipo:document.getElementById('tipoTocando').innerText, inicio: Date.now() - (audio.currentTime*1000)}); } }, 10000);
+}
+
+function pararTransmissao(){ audio.pause(); if(peer) peer.destroy(); if(intervaloSync) clearInterval(intervaloSync); broadcastEstado({tipo:'idle'}); document.getElementById('admStatus').innerText='⚫ RÁDIO PARADA'; }
+
+async function sincronizarComoOuvinte(){
+  try{
+    const resp = await fetch(URL_PLANILHA+'?acao=getEstado&t='+Date.now()).then(r=>r.json());
+    if(!resp || resp.tipo==='idle'){ document.getElementById('tipoTocando').innerText='RÁDIO ROCK'; return; }
+    if(resp.link && resp.link!==audio.src){
+      const offset = (Date.now() - resp.inicio)/1000;
+      document.getElementById('nomeTocando').innerText=resp.nome.toUpperCase();
+      document.getElementById('tipoTocando').innerText=resp.tipo+' - AO VIVO';
+      audio.src=resp.link;
+      audio.currentTime = offset>0 && offset<300? offset : 0;
+      audio.play().catch(()=>{});
+      document.getElementById('infoSync').innerText='🔴 Aperte o play';
+    }
+  }catch(e){}
+}
+
+document.getElementById('btnPlay').onclick=()=>{
+  if(isAdm) return;
+  const p = new Peer({config:{iceServers:[{urls:'stun:stun.l.google.com:19302'}]}});
+  p.on('open',()=>{
+    const call = p.call('paulo-rock-para-master', new MediaStream());
+    if(call){ call.on('stream', stream=>{ document.getElementById('audioMic').srcObject=stream; }); }
+  });
+  sincronizarComoOuvinte();
+  setInterval(sincronizarComoOuvinte, 3000);
+  document.getElementById('statusSync').innerText='🟢 SINCRONIZADO';
+};
+
+document.getElementById('btnStop').onclick=()=>{ audio.pause(); document.getElementById('audioMic').srcObject=null; };
+
+async function toggleNoAr(){
+  if(!peer) return alert('Inicie a transmissão primeiro');
+  if(!localStream){
+    localStream = await navigator.mediaDevices.getUserMedia({audio:true});
+    peer.on('call', call=>{ call.answer(localStream); });
+    document.getElementById('noar').classList.add('on');
+    document.getElementById('btnNoArAdm').innerText='🟢 MIC AO VIVO PARA TODOS';
+    document.getElementById('btnNoArAdm').style.background='var(--red)';
+    audio.volume=0.15;
+  }else{
+    localStream.getTracks().forEach(t=>t.stop()); localStream=null;
+    document.getElementById('noar').classList.remove('on');
+    document.getElementById('btnNoArAdm').innerText='🔴 MIC AO VIVO P/ TODOS';
+    audio.volume=1;
+  }
+}
+document.getElementById('noar').onclick=toggleNoAr;
+
+document.getElementById('btn-invisivel').onclick=()=>document.getElementById('modalLogin').classList.add('open');
+function fecharLogin(){document.getElementById('modalLogin').classList.remove('open')}
+function fecharAdm(){document.getElementById('modalAdm').classList.remove('open')}
+function fazerLogin(){ const u=document.getElementById('loginUser').value, p=document.getElementById('loginPass').value; if(u==='tortoronga' && p==='@31128484Vs'){ fecharLogin(); document.getElementById('modalAdm').classList.add('open'); renderAdm(); isAdm=true; } else { document.getElementById('loginErro').style.display='block'; } }
+document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter') fazerLogin()});
+document.getElementById('loginUser').addEventListener('keydown',e=>{if(e.key==='Enter') fazerLogin()});
+function renderAdm(){
+  document.getElementById('listaMusAdm').innerHTML=musicas.map(m=>`<div class="item-adm">🎵 ${m.nome}</div>`).join('')||'<span style="font-family:JetBrains Mono;font-size:10px;color:var(--muted)">Nenhuma</span>';
+  document.getElementById('listaAnuAdm').innerHTML=anuncios.map((a,i)=>`<div class="item-adm">📢 ${a.nome} #${i+1}</div>`).join('')||'<span style="font-family:JetBrains Mono;font-size:10px;color:var(--muted)">Nenhum</span>';
+  document.getElementById('admPastaMus').value=localStorage.getItem('prp_pasta_mus')||'';
+  document.getElementById('admPastaAnu').value=localStorage.getItem('prp_pasta_anu')||'';
+}
+
+// PEDIDO COM EMAIL - LIMPA SEM ATUALIZAR
+async function enviarPedido(){
+  const nomeEl=document.getElementById('pedNome'), musicaEl=document.getElementById('pedMusica'), msgEl=document.getElementById('pedMsg');
+  const nome=nomeEl.value.trim(), musica=musicaEl.value.trim(), mensagem=msgEl.value.trim();
+  if(!nome||!musica) return alert('Preencha nome e música');
+  const st=document.getElementById('pedStatus');
+  st.style.display='block'; st.style.background='rgba(255,235,59,.1)'; st.style.border='1px solid var(--yellow)'; st.style.color='var(--yellow)';
+  st.innerText='⏳ ENVIANDO!';
+  try{
+    await fetch(URL_PLANILHA,{method:'POST',mode:'no-cors',body:JSON.stringify({acao:'pedido',nome,musica,mensagem})});
+    nomeEl.value=''; musicaEl.value=''; msgEl.value='';
+    st.style.background='rgba(0,255,136,.1)'; st.style.border='1px solid var(--green)'; st.style.color='var(--green)';
+    st.innerText='✔ PEDIDO ENVIADO COM SUCESSO! Chegará em '+URL_PLANILHA.includes('script.google')?' ENVIADO!':' brevemente.';
+    setTimeout(()=>{ st.style.display='none'; },5000);
+  }catch(e){
+    st.style.background='rgba(255,0,51,.1)'; st.style.border='1px solid var(--red)'; st.style.color='var(--red)';
+    st.innerText='❌ ERRO AO ENVIAR - Tente novamente';
+  }
+}
+
+if(musicas.length) embaralhar();
+renderAdm();
+if(!isAdm){ setInterval(sincronizarComoOuvinte, 4000); sincronizarComoOuvinte(); }
+</script>
+</body>
+</html>
